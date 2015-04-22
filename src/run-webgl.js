@@ -1,56 +1,75 @@
-var runWebgl = (function () {
-  var vShaderSrc, fShaderSrc;
+function Webgl() {
+  this.canvasId         = "webgl";
+  this.vertShaderPath   = null;
+  this.vertShaderSrc    = null;
+  this.fragShaderPath   = null;
+  this.fragShaderSrc    = null;
+  this.script           = null;
 
-  var runWebglScript = function(config, program) {
-    var gl = getContext(config.canvasId);
-    var callback = setupCallback(gl, program);
-    setShader(config.vertShader, setVShaderSrc, callback);
-    setShader(config.fragShader, setFShaderSrc, callback);
-  };
+  this.runScript = function () {
+    var proto = this;
 
-  var getContext = function(canvasId) {
-    var canvas = document.getElementById(canvasId);
-    var context = null;
+    // helper functions
 
-    try {
-      context = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-    } catch(e) {
-      throw new Error("Could not obtain WebGL context.");
-    }
+    var getContext = function() {
+      var canvas = document.getElementById(proto.canvasId);
+      var context = null;
 
-    return context;
-  };
-
-  var setupCallback = function(gl, program) {
-    return function () {
-      if (vShaderSrc && fShaderSrc) {
-        // provided by authors
-        initShaders(gl, vShaderSrc, fShaderSrc);
-        program(gl);
+      try {
+        context = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      } catch(e) {
+        throw new Error("Could not obtain WebGL context.");
       }
+
+      return context;
+    };
+
+    var setupUserScript = function(gl) {
+      return function () {
+        var vs = proto.vertShaderSrc;
+        var fs = proto.fragShaderSrc;
+
+        if (vs && fs) {
+          initShaders(gl, vs, fs); // provided by authors
+          proto.script(gl);
+        }
+      }
+    };
+
+    var setVertShaderSrc = function(text) {
+      proto.vertShaderSrc = text;
+    };
+
+    var setFragShaderSrc = function(text) {
+      proto.fragShaderSrc = text;
+    };
+
+    var setShaderSrc = function(fname, setter, userScript) {
+      var req = new XMLHttpRequest();
+
+      req.onload = function (e) {
+        setter(e.target.responseText);
+        userScript();
+      }
+
+      req.overrideMimeType('text/plain');
+      req.open("GET", fname);
+      req.send();
+    };
+
+    // run the provided script
+
+    var gl = getContext();
+    var script = setupUserScript(gl);
+
+    script(); // if shader srcs are set manually
+
+    if (!proto.vertShaderSrc) {
+      setShaderSrc(proto.vertShaderPath, setVertShaderSrc, script);
+    }
+
+    if (!proto.fragShaderSrc) {
+      setShaderSrc(proto.fragShaderPath, setFragShaderSrc, script);
     }
   };
-
-  var setVShaderSrc = function(text) {
-    vShaderSrc = text;
-  }
-
-  var setFShaderSrc = function(text) {
-    fShaderSrc = text;
-  }
-
-  var setShader = function(fname, setter, callback) {
-    var req = new XMLHttpRequest();
-
-    req.onload = function (evt) {
-      setter(evt.target.responseText);
-      callback();
-    }
-
-    req.overrideMimeType('text/plain');
-    req.open("GET", fname);
-    req.send();
-  };
-
-  return runWebglScript;
-})();
+}
