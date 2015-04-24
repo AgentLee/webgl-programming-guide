@@ -1,6 +1,6 @@
 var main = function () {
 
-  webgl = new Webgl();
+  var webgl = new Webgl();
   webgl.vertShaderPath = "glsl/ch2/hello-point-1.vsh";
   webgl.fragShaderPath = "glsl/ch2/hello-point-1.fsh";
 

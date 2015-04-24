@@ -1,6 +1,6 @@
 var main = function () {
 
-  webgl = new Webgl();
+  var webgl = new Webgl();
   webgl.vertShaderSrc = "void main() {}";
   webgl.fragShaderSrc = "void main() {}";
 

@@ -1,9 +1,11 @@
 function Webgl() {
+  this.attrNames        = [];
+  this.canvas           = null;
   this.canvasId         = "webgl";
-  this.vertShaderPath   = null;
-  this.vertShaderSrc    = null;
   this.fragShaderPath   = null;
   this.fragShaderSrc    = null;
+  this.vertShaderPath   = null;
+  this.vertShaderSrc    = null;
   this.script           = null;
 
   this.runScript = function () {
@@ -12,11 +14,13 @@ function Webgl() {
     // helper functions
 
     var getContext = function() {
-      var canvas = document.getElementById(proto.canvasId);
-      var context = null;
+
+      if (!proto.canvas) {
+        proto.canvas = document.getElementById(proto.canvasId);
+      }
 
       try {
-        context = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        var context = proto.canvas.getContext("webgl") || proto.canvas.getContext("experimental-webgl");
       } catch(e) {
         throw new Error("Could not obtain WebGL context.");
       }
@@ -31,9 +35,26 @@ function Webgl() {
 
         if (vs && fs) {
           initShaders(gl, vs, fs); // provided by authors
-          proto.script(gl);
+          var attrs = initAttributes(gl);
+          proto.script(gl, attrs);
         }
       }
+    };
+
+    var initAttributes = function(gl) {
+      var name = null;
+      attrs = {};
+
+      for (var i in proto.attrNames) {
+        name = proto.attrNames[i];
+        attrs[name] = gl.getAttribLocation(gl.program, "a_" + name);
+
+        if (attrs[name] < 0) {
+          throw new Error("Could not find attribute " + name + " in shaders.");
+        }
+      }
+
+      return attrs;
     };
 
     var setVertShaderSrc = function(text) {
