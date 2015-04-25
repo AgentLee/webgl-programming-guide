@@ -33,6 +33,7 @@ function Webgl() {
         if (vs && fs) {
           initShaders(gl, vs, fs); // provided by authors
           initAttributes(gl);
+          initUniforms(gl);
           proto.script(gl);
         }
       }
@@ -51,6 +52,21 @@ function Webgl() {
         }
       }
     };
+
+    var initUniforms = function(gl) {
+      var name = null;
+      gl.uni = {};
+
+      for (var i in proto.uniNames) {
+        name = proto.uniNames[i];
+        gl.uni[name] = gl.getUniformLocation(gl.program, "u_" + name);
+
+        if (!gl.uni[name]) {
+          throw new Error("Could not find uniform " + name + " in shaders.");
+        }
+      }
+    };
+
 
     var setVertShaderSrc = function(text) {
       proto.vertShaderSrc = text;
