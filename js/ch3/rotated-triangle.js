@@ -7,16 +7,19 @@ var main = function () {
   webgl.uniNames        = ["xformMatrix"];
 
   webgl.script = function(gl) {
-    var angle = 60;
+    var
+      angle = 60,
+      tx    = 0.3,
+      ty    = 0.3,
 
-    var verticies = [
-      { x: 0.0,   y: 0.5  },
-      { x: -0.5,  y: -0.5 },
-      { x: 0.5,   y: -0.5  }
-    ];
+      verticies = [
+        { x: 0.0,   y: 0.5  },
+        { x: -0.5,  y: -0.5 },
+        { x: 0.5,   y: -0.5 }
+      ];
 
     // set transformation matrix
-    gl.uniformMatrix4fv(gl.uni.xformMatrix, false, xformMatrixForAngle(angle));
+    gl.uniformMatrix4fv(gl.uni.xformMatrix, false, xformMatrixForAngle(angle, tx, ty));
 
     // create vertex array buffer bound to a_Position
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
@@ -50,7 +53,7 @@ var toRadians = function(degrees) {
   return Math.PI * degrees / 180;
 };
 
-// openGL species matrix rows as columns; this transformation
+// openGL requires matrix rows as columns; this transformation
 // undoes that clusterfuck
 var toGlMatrixFromRows = function(matrix) {
   var xformed = [];
@@ -64,15 +67,15 @@ var toGlMatrixFromRows = function(matrix) {
   return new Float32Array(xformed);
 }
 
-var xformMatrixForAngle = function(degrees) {
+var xformMatrixForAngle = function(degrees, tx, ty) {
   var
     radians = toRadians(90),
     cosB    = Math.cos(radians),
     sinB    = Math.sin(radians),
 
     matrix = [
-      [cosB, -sinB, 0.0, 0.0],
-      [sinB,  cosB, 0.0, 0.0],
+      [cosB, -sinB, 0.0, tx ],
+      [sinB,  cosB, 0.0, ty ],
       [0.0,   0.0,  1.0, 0.0],
       [0.0,   0.0,  0.0, 1.0]
     ];
