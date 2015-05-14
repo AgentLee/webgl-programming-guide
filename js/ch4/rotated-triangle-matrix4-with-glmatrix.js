@@ -8,27 +8,25 @@ var main = function () {
 
   webgl.script = function(gl) {
     var
-      angle = 60,
-      tx    = 0.3,
-      ty    = 0.3,
+      angle = toRad(60);
+      xform = mat4.create(),
+      trans = vec3.fromValues(0, 0.3, 0),
 
-      verticies = [
-        { x: 0.0,   y: 0.5  },
-        { x: -0.5,  y: -0.5 },
-        { x: 0.5,   y: -0.5 }
-      ];
+      verts = new Float32Array([
+         0.0,  0.5,
+        -0.5, -0.5,
+         0.5, -0.5
+      ]);
 
-      xformMatrix = new Matrix4();
-
-    xformMatrix.setRotate(angle, 0, 0, 1);
-    xformMatrix.translate(.5, .5, 0, 1);
+    xform = mat4.rotateZ(xform, xform, angle);
+    xform = mat4.translate(xform, xform, trans);
 
     // set transformation matrix
-    gl.uniformMatrix4fv(gl.uni.xformMatrix, false, xformMatrix.elements);
+    gl.uniformMatrix4fv(gl.uni.xformMatrix, false, xform);
 
     // create vertex array buffer bound to a_Position
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-    gl.bufferData(gl.ARRAY_BUFFER, toGlVertArray(verticies), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
     gl.vertexAttribPointer(gl.attr.Position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(gl.attr.Position);
 
@@ -37,19 +35,12 @@ var main = function () {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     // draw the results
-    gl.drawArrays(gl.TRIANGLES, 0, verticies.length);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
   };
 
   webgl.runScript();
 };
 
-var toGlVertArray = function (verticies) {
-  var inline = [];
-
-  for (var i in verticies) {
-    inline.push(verticies[i].x);
-    inline.push(verticies[i].y);
-  }
-
-  return new Float32Array(inline);
-};
+var toRad = function(deg) {
+  return deg * 0.017
+}
